@@ -28,10 +28,6 @@ write the password for the given entry to standard output.
 
 The storage directory (default: ~/.password-store).
 
-=item B<PASSWORD_STORE_KEY>
-
-GPG key to encrypt files with (default: self).
-
 =back
 
 =head1 FILES
@@ -42,30 +38,30 @@ GPG key to encrypt files with (default: self).
 
 The default storage directory.
 
-=item I<~/.password-store/.gpg-id>
-
-Provided for compatibility with pass(1).
-
 =back
 
 =head1 EXAMPLES
 
-Create a new entry with a random password using pwgen(1):
+Create a new entry with a pseudo(!)random password using pipe orchestra:
 
-	$ pwgen -1 | tpm insert system/new-user
+	$ echo $(date | sha512sum | xxd -r -p | base64 -w 0 | tr -d '/+=' | cut -c 1-24)_- | tpm insert some-entry
 
-Create a new entry called 'system/root':
+Create a new entry called 'another-entry':
 
-	$ tpm insert system/root
+	$ tpm insert another-entry
 
-Write your 'system/root' password to standard output:
+Write your 'another-entry' password to standard output:
 
-	$ tpm show system/root
+	$ tpm show another-entry
 
-Copy your 'system/root' password to the clipboard using xclip(1):
+Copy your 'some-entry' password to the clipboard using pbcopy(1):
 
-	$ tpm show system/root | tr -d '\n' | xclip
+	$ tpm show some-entry | pbcopy
+	
+Remove your 'another-entry' password:
+
+	$ tpm remove another-entry | pbcopy
 
 =head1 SEE ALSO
 
-gpg2(1), pass(1), pwgen(1), xclip(1)
+gpg2(1), pass(1), pbcopy(1)
