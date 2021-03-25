@@ -60,7 +60,7 @@ Copy your 'some-entry' password to the clipboard using pbcopy(1):
 	
 Remove your 'another-entry' password:
 
-	$ tpm remove another-entry | pbcopy
+	$ tpm remove another-entry
 
 =head1 SEE ALSO
 
