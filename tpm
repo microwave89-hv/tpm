@@ -1,5 +1,6 @@
 #!/bin/sh
 # Copyright (C) 2013-2016 Sören Tempel
+# Edited microwave89-hv, 3/2021
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,12 +21,9 @@ umask 077
 # Variables
 ##
 
-GPG_OPTS="--quiet --yes --batch"
+CRYPT_OPTS="-vv --symmetric --no-symkey-cache --cipher-algo TWOFISH \
+			--pinentry-mode loopback --output"
 STORE_DIR="${PASSWORD_STORE_DIR:-${HOME}/.password-store}"
-
-if [ -r "${STORE_DIR}/.gpg-id" ] && [ -z "${PASSWORD_STORE_KEY}" ]; then
-  read -r PASSWORD_STORE_KEY < "${STORE_DIR}/.gpg-id"
-fi
 
 ##
 # Helper
@@ -36,12 +34,17 @@ abort() {
   exit 1
 }
 
-gpg() {
-  if [ -n "${PASSWORD_STORE_KEY}" ]; then
-    gpg2 $GPG_OPTS --recipient "${PASSWORD_STORE_KEY}" "$@"
-  else
-    gpg2 $GPG_OPTS --default-recipient-self "$@"
-  fi
+encrypt() {
+	# Create a plaintext file and fill it with the data that the
+	# caller piped into encrypt(), and then encrypt in-place.
+	# Use symmetric encryption only, to keep things simple.
+	gpg2 $CRYPT_OPTS "$@"
+}
+
+temp_decrypt() {
+	# The following command doesn't actually store the results in the
+	# input file after decrypting, as opposed to the encryption command.
+    gpg2 --decrypt --pinentry-mode loopback "$@"
 }
 
 readpw() {
@@ -69,8 +72,8 @@ show() {
   if [ ! -e "${entry_path}" ]; then
     abort "The requested entry doesn't exist."
   fi
-
-  gpg --decrypt "${entry_path}"
+  
+  temp_decrypt "${entry_path}"
 }
 
 insert() {
@@ -96,8 +99,22 @@ insert() {
   fi
 
   mkdir -p "${entry_path%/*}"
-  printf '%s\n' "${password}" | gpg --encrypt \
-    --output "${entry_path}"
+  printf '%s\n' "${password}" | encrypt "${entry_path}"
+}
+
+remove() {
+  entry_name="${1}"
+  entry_path="${STORE_DIR}/${entry_name}.gpg"
+
+  if [ -z "${entry_name}" ]; then
+    abort "USAGE: tpm show ENTRY"
+  fi
+
+  if [ ! -e "${entry_path}" ]; then
+    abort "The requested entry doesn't exist."
+  fi
+  
+  rm "${entry_path}"
 }
 
 ##
@@ -111,6 +128,7 @@ fi
 case "${1}" in
   "show")   show   "${2}" ;;
   "insert") insert "${2}" ;;
+  "remove") remove "${2}" ;;
   *) abort "USAGE: tpm COMMAND ENTRY" ;;
 esac
 
