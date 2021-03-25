@@ -8,10 +8,10 @@ B<tpm> I<COMMAND> I<ENTRY>
 
 =head1 DESCRIPTION
 
-tpm is a tiny shell script which is heavily inspired and largely
-compatible with pass(1). Just like pass it uses gpg2(1) to securely
-store your passwords, the major difference between pass and tpm is that
-the latter is a lot more minimal. Furthermore, tpm is written entirely
+tpm is a tiny shell script which is heavily inspired by pass(1).
+Just like pass it uses gpg2(1) to securely store your passwords,
+the major difference between pass and tpm is that the latter
+is a lot more minimal. Furthermore, tpm is written entirely
 in POSIX shell.
 
 Invoking tpm consists of specifying a command either I<insert> or
